@@ -63,35 +63,35 @@ const bookResolvers = {
           * @param {*} input 
           * @param {*} context
           */
-        editBook: async (_, { input }, context) => {
+        removeFromCart: async (_, { bookId }, context) => {
             try {
                 if (!context.id) {
                     return new ApolloError.AuthenticationError('UnAuthenticated');
                 }
-                if (context.role === "Customer") {
-                    return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
+                if (context.role === "Admin") {
+                    return new ApolloError.AuthenticationError('Only Customer role can perform this operation');
                 }
-                const checkbooks = await bookModel.find({ emailId: context.email });
-                if (checkbooks.length === 0) {
-                    return new ApolloError.UserInputError('User has not created any books till now');
-                }
-                let index = 0;
-                while (index < checkbooks.length) {
-                    if (checkbooks[index].id === input.bookId) {
-                        await bookModel.findByIdAndUpdate(checkbooks[index], {
-                            title: input.title || checkbooks[index].title,
-                            description: input.description || checkbooks[index].description,
-                            genre: input.genre || checkbooks[index].genre
-                        }, { new: true });
-                        return ({
-                            genre: input.genre || checkbooks[index].genre,
-                            title: input.title || checkbooks[index].title,
-                            description: input.description || checkbooks[index].description
-                        })
+                const checkaddToCart = await addToCartModel.findOne({ emailId: context.email });
+                if (checkaddToCart) {
+                    for (index = 0; index < checkaddToCart.bookIds.length; index++) {
+                        if (JSON.stringify(checkaddToCart.bookIds[index]) === JSON.stringify(bookId)) {
+                            let itemToBeRemoved = bookId;
+                            await addToCartModel.findOneAndUpdate(
+                                {
+                                    emailId: context.email
+                                },
+                                {
+                                    $pull: {
+                                        bookIds: itemToBeRemoved
+                                    },
+                                })
+                            return `Item with id: ${bookId} removed sucessfully from cart`
+                        }
                     }
-                    index++;
+                    return `Item with id: ${bookId} not found`
                 }
-                return new ApolloError.UserInputError('Book with the given id was not found');
+                    return `Item with id: ${bookId} not found`
+                
             }
             catch (error) {
                 console.log(error);

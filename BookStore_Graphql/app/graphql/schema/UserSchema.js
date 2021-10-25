@@ -72,4 +72,5 @@ module.exports = gql(`
         editBook(input:EditBookInput):BookOutput
         deleteBook(bookId:ID!):String
         addBookToCart(bookId:ID!):String
+        removeFromCart(bookId:ID!):String
         }`);
