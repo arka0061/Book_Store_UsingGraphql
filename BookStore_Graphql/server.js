@@ -6,6 +6,8 @@
 */
 const { ApolloServer } = require('apollo-server-express');
 const dbConfig = require('./config/database.config');
+const graphqlSchema = require('./app/graphql/schema/index');
+const graphqlResolver = require('./app/graphql/resolvers/index');
 const express = require('express');
 require('dotenv').config();
 
