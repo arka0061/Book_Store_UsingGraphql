@@ -19,7 +19,7 @@
    Query: {
  
      /**
-      * @description Query to get all books from noteModel Schema in Database
+      * @description Query to get all books from bookModel Schema in Database
       */
      books: async () => await bookModel.find()
    },
@@ -36,7 +36,7 @@
     //      if (!context.id) {
     //        return new ApolloError.AuthenticationError('UnAuthenticated');
     //      }
-    //      const checkbooks = await noteModel.find({ emailId: context.email });
+    //      const checkbooks = await bookModel.find({ emailId: context.email });
     //      if (checkbooks.length === 0) {
     //        return new ApolloError.UserInputError('User has not created any books till now');
     //      }
@@ -49,7 +49,7 @@
     //  },
  
      /**
-       * @description Mutation to create a note and store it in noteModel Schema of
+       * @description Mutation to create a book and store it in bookModel Schema of
        * Database
        * @param {*} empty
        * @param {*} input 
@@ -84,41 +84,47 @@
      },
  
      /**
-       * @description Mutation to edit a existing note
+       * @description Mutation to edit a existing book
        * @param {*} empty
        * @param {*} input 
        * @param {*} context
        */
-    //  editNote: async (_, { input }, context) => {
-    //    try {
-    //      if (!context.id) {
-    //        return new ApolloError.AuthenticationError('UnAuthenticated');
-    //      }
-    //      const checkbooks = await noteModel.find({ emailId: context.email });
-    //      if (checkbooks.length === 0) {
-    //        return new ApolloError.UserInputError('User has not created any books till now');
-    //      }
-    //      let index = 0;
-    //      while (index < checkbooks.length) {
-    //        if (checkbooks[index].id === input.noteId) {
-    //          await noteModel.findByIdAndUpdate(checkbooks[index], {
-    //            title: input.title || checkbooks[index].title,
-    //            description: input.description || checkbooks[index].description
-    //          }, { new: true });
-    //          return ({
-    //            title: input.title || checkbooks[index].title,
-    //            description: input.description || checkbooks[index].description
-    //          })
-    //        }
-    //        index++;
-    //      }
-    //      return new ApolloError.UserInputError('Note with the given id was not found');
-    //    }
-    //    catch (error) {
-    //      console.log(error);
-    //      return new ApolloError.ApolloError('Internal Server Error');
-    //    }
-    //  },
+     editBook: async (_, { input }, context) => {
+       try {
+         if (!context.id) {
+           return new ApolloError.AuthenticationError('UnAuthenticated');
+         }
+         if(context.role==="Customer")
+         {
+          return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
+         }
+         const checkbooks = await bookModel.find({ emailId: context.email });
+         if (checkbooks.length === 0) {
+           return new ApolloError.UserInputError('User has not created any books till now');
+         }
+         let index = 0;
+         while (index < checkbooks.length) {
+           if (checkbooks[index].id === input.bookId) {
+             await bookModel.findByIdAndUpdate(checkbooks[index], {
+               title: input.title || checkbooks[index].title,
+               description: input.description || checkbooks[index].description,
+               genre: input.genre || checkbooks[index].genre
+             }, { new: true });
+             return ({
+               genre:input.genre || checkbooks[index].genre,
+               title: input.title || checkbooks[index].title,
+               description: input.description || checkbooks[index].description
+             })
+           }
+           index++;
+         }
+         return new ApolloError.UserInputError('Book with the given id was not found');
+       }
+       catch (error) {
+         console.log(error);
+         return new ApolloError.ApolloError('Internal Server Error');
+       }
+     },
  
     //  /**
     //    * @description Mutation to delete a note 
@@ -131,7 +137,7 @@
     //      if (!context.id) {
     //        return new ApolloError.AuthenticationError('UnAuthenticated');
     //      }
-    //      const checkbooks = await noteModel.find({ emailId: context.email });
+    //      const checkbooks = await bookModel.find({ emailId: context.email });
     //      if (checkbooks.length === 0) {
     //        return new ApolloError.UserInputError('User has not created any books till now');
     //      }
@@ -145,7 +151,7 @@
     //              title: checkbooks[index].title,
     //              description: checkbooks[index].description
     //            })
-    //          await noteModel.findByIdAndDelete(checkbooks[index]);
+    //          await bookModel.findByIdAndDelete(checkbooks[index]);
     //          const checkLabel = await labelModel.findOne({ noteId: input.noteId });
     //          if (checkLabel) {
     //            trashmodel.label = checkLabel.labelName

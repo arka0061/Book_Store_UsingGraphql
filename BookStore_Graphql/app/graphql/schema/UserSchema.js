@@ -39,26 +39,34 @@ module.exports = gql(`
         title:String
         description:String
     }
-    type Query{
-        books:[Book!]!
-        users:[User!]!
-    }
+  
     input CreateBookInput
     {
         genre:String
         title:String!
         description:String!
     }
-    type CreateBookOutput
+    type BookOutput
     {
         genre:String
         title:String
         description:String
     }
-  
+    input EditBookInput
+    {
+        bookId:String!
+        genre:String
+        title:String
+        description:String
+    }
+    type Query{
+        books:[Book!]!
+        users:[User!]!
+    }
     type Mutation{
         admin(email:String!):String
         createUser(input:UserInput):User
         loginUser(input:LoginInput):authUser
-        createBook(input:CreateBookInput):CreateBookOutput   
+        createBook(input:CreateBookInput):BookOutput
+        editBook(input:EditBookInput):BookOutput
         }`);
