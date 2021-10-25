@@ -35,12 +35,50 @@ module.exports = gql(`
         lastName:String
         email:String
     }
-    type Query{
-        users:[User!]!
+    type Book{
+        _id:ID
+        title:String
+        description:String
     }
   
+    input CreateBookInput
+    {
+        genre:String
+        title:String!
+        description:String!
+    }
+    type BookOutput
+    {
+        genre:String
+        title:String
+        description:String
+    }
+    input EditBookInput
+    {
+        bookId:String!
+        genre:String
+        title:String
+        description:String
+    }
+    input SearchBooks
+    {
+        title:String
+        genre:String
+        bookId:ID
+    }
+    type Query{
+        books:[Book!]!
+        users:[User!]!
+    }
     type Mutation{
         admin(email:String!):String
-        createUser( input:UserInput):User
-        loginUser( input:LoginInput):authUser   
+        createUser(input:UserInput):User
+        loginUser(input:LoginInput):authUser
+        createBook(input:CreateBookInput):BookOutput
+        editBook(input:EditBookInput):BookOutput
+        deleteBook(bookId:ID!):String
+        addBookToCart(bookId:ID!):String
+        removeFromCart(bookId:ID!):String
+        showCartItems:[BookOutput]!
+        searchBooks(input:SearchBooks):[BookOutput]
         }`);
