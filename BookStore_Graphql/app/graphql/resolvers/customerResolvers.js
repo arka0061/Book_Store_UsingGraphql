@@ -99,9 +99,9 @@ const bookResolvers = {
             }
         },
         /**
-          * @description Mutation to delete a book
+          * @description Mutation to showCartItems
           * @param {*} empty
-          * @param {*} bookId
+          * @param {*} empty
           * @param {*} context
           */
         showCartItems: async (_, __, context) => {
@@ -113,14 +113,11 @@ const bookResolvers = {
                     return new ApolloError.AuthenticationError('Only Customer role can perform this operation');
                 }
                 const checkaddToCart = await addToCartModel.findOne({ emailId: context.email });
-                if(checkaddToCart)
-                {
+                if (checkaddToCart) {
                     const getBooks = await addToCartModel.
                         findOne({ emailId: checkaddToCart.emailId }).
-                        populate('bookIds')
-                        console.log(getBooks)
-                        
-                   return getBooks.bookIds
+                        populate('bookIds');
+                    return getBooks.bookIds
                 }
                 return ApolloError.UserInputError("No books added in cart")
             }

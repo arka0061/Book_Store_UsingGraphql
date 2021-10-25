@@ -60,6 +60,12 @@ module.exports = gql(`
         title:String
         description:String
     }
+    input SearchBooks
+    {
+        title:String
+        genre:String
+        bookId:ID
+    }
     type Query{
         books:[Book!]!
         users:[User!]!
@@ -74,4 +80,5 @@ module.exports = gql(`
         addBookToCart(bookId:ID!):String
         removeFromCart(bookId:ID!):String
         showCartItems:[BookOutput]!
+        searchBooks(input:SearchBooks):[BookOutput]
         }`);
