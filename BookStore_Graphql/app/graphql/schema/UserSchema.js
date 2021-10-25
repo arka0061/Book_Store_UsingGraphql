@@ -69,4 +69,5 @@ module.exports = gql(`
         loginUser(input:LoginInput):authUser
         createBook(input:CreateBookInput):BookOutput
         editBook(input:EditBookInput):BookOutput
+        deleteBook(bookId:ID!):String
         }`);

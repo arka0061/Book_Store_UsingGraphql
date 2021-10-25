@@ -126,71 +126,46 @@
        }
      },
  
-    //  /**
-    //    * @description Mutation to delete a note 
-    //    * @param {*} empty
-    //    * @param {*} input 
-    //    * @param {*} context
-    //    */
-    //  deleteNote: async (_, { input }, context) => {
-    //    try {
-    //      if (!context.id) {
-    //        return new ApolloError.AuthenticationError('UnAuthenticated');
-    //      }
-    //      const checkbooks = await bookModel.find({ emailId: context.email });
-    //      if (checkbooks.length === 0) {
-    //        return new ApolloError.UserInputError('User has not created any books till now');
-    //      }
-    //      let index = 0;
-    //      while (index < checkbooks.length) {
-    //        if (checkbooks[index].id === input.noteId) {
-    //          const trashmodel = new trashModel(
-    //            {
-    //              noteID: input.noteId,
-    //              email: checkbooks[index].emailId,
-    //              title: checkbooks[index].title,
-    //              description: checkbooks[index].description
-    //            })
-    //          await bookModel.findByIdAndDelete(checkbooks[index]);
-    //          const checkLabel = await labelModel.findOne({ noteId: input.noteId });
-    //          if (checkLabel) {
-    //            trashmodel.label = checkLabel.labelName
-    //            await trashmodel.save();
-    //            if (checkLabel.noteId.length === 1) {
-    //              await labelModel.findByIdAndDelete(checkLabel.id);
-    //            }
-    //            await labelModel.findOneAndUpdate(
-    //              {
-    //                labelName: checkLabel.labelName
-    //              },
-    //              {
-    //                $pull: {
-    //                  noteId: input.noteId
-    //                },
-    //              }
-    //            )
-    //          }
-    //          await trashmodel.save();
-    //          return ({
-    //            title: checkbooks[index].title,
-    //            description: checkbooks[index].description
-    //          })
-    //        }
-    //        index++;
-    //      }
-    //      return new ApolloError.UserInputError('Note with the given id was not found');
-    //    }
-    //    catch (error) {
-    //      console.log(error);
-    //      return new ApolloError.ApolloError('Internal Server Error');
-    //    }
-    //  },
-    //  /**
-    //    * @description Mutation to display books in trash
-    //    * @param {*} empty
-    //    * @param {*} empty 
-    //    * @param {*} context
-    //    */
+     /**
+       * @description Mutation to delete a note 
+       * @param {*} empty
+       * @param {*} input 
+       * @param {*} context
+       */
+     deleteBook: async (_, { bookId }, context) => {
+       try {
+         if (!context.id) {
+           return new ApolloError.AuthenticationError('UnAuthenticated');
+         }
+         if(context.role==="Customer")
+         {
+          return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
+         }
+         const checkbooks = await bookModel.find({ emailId: context.email });
+         if (checkbooks.length === 0) {
+           return new ApolloError.UserInputError('User has not created any books till now');
+         }
+         let index = 0;
+         while (index < checkbooks.length) {
+           if (checkbooks[index].id === bookId) {
+             await bookModel.findByIdAndDelete(checkbooks[index]);
+             return `Book with id ${bookId} was deleted sucessfully`
+           }
+           index++;
+         }
+         return new ApolloError.UserInputError('Book with the given id was not found');
+       }
+       catch (error) {
+         console.log(error);
+         return new ApolloError.ApolloError('Internal Server Error');
+       }
+     },
+     /**
+       * @description Mutation to display books in trash
+       * @param {*} empty
+       * @param {*} empty 
+       * @param {*} context
+       */
    }
  }
  module.exports = bookResolvers;
