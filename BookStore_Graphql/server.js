@@ -24,6 +24,7 @@ const server = new ApolloServer({
 //storing express in app
 const app = express();
 
+server.start()
 //apply express middleware
 server.applyMiddleware({ app });
 

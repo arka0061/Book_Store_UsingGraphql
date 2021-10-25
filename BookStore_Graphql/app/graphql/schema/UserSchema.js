@@ -21,16 +21,26 @@ module.exports = gql(`
         lastName:String!
         email:String!
         password:String!
+        role:String!
     }
     input LoginInput{     
         email:String!
         password:String!
+    }
+    type authUser
+    {
+        _id:ID
+        token:String
+        firstName:String
+        lastName:String
+        email:String
     }
     type Query{
         users:[User!]!
     }
   
     type Mutation{
+        admin(email:String!):String
         createUser( input:UserInput):User
-        loginUser( input:LoginInput):authUser    
+        loginUser( input:LoginInput):authUser   
         }`);

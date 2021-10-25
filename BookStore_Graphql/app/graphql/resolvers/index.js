@@ -5,4 +5,5 @@
 */
 module.exports = [
     // eslint-disable-next-line no-multi-assign
-    userResolvers = require('./userResolvers')];
+    userResolvers = require('./userResolvers'),
+require('./bookResolvers')];
