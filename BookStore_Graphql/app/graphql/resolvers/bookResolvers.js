@@ -11,178 +11,177 @@
  * @author      : Arka Parui
  *********************************************************************/
 
-const ApolloError = require('apollo-server-errors');
-const bookModel = require('../../models/book.model');
-
-const bookResolvers = {
-  Query: {
-
-    /**
-     * @description Query to get all books from bookModel Schema in Database
-     */
-    books: async (_, __, context) => {
-      if (!context.id) {
-        return new ApolloError.AuthenticationError('UnAuthenticated');
-      }
-      const checkbooks = await bookModel.find()
-      if (checkbooks.length === 0) {
-        return new ApolloError.UserInputError('User has not created any books till now');
-      }
-      return checkbooks;
-    }
-  },
-  Mutation: {
-    /**
-      * @description Mutation to create a book and store it in bookModel Schema of
-      * Database
+ const ApolloError = require('apollo-server-errors');
+ const bookModel = require('../../models/book.model');
+ 
+ const bookResolvers = {
+   Query: {
+ 
+     /**
+      * @description Query to get all books from bookModel Schema in Database
+      */
+     books: async (_, __, context) => {
+       if (!context.id) {
+         return new ApolloError.AuthenticationError('UnAuthenticated');
+       }
+       const checkbooks = await bookModel.find()
+       if (checkbooks.length === 0) {
+         return new ApolloError.UserInputError('User has not created any books till now');
+       }
+       return checkbooks;
+     }
+   },
+   Mutation: {
+     /**
+       * @description Mutation to create a book and store it in bookModel Schema of
+       * Database
+       * @param {*} empty
+       * @param {*} input 
+       * @param {*} context
+       */
+     createBook: async (_, { input }, context) => {
+       try {
+         if (!context.id) {
+           return new ApolloError.AuthenticationError('UnAuthenticated');
+         }
+         if (context.role === "Customer") {
+           return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
+         }
+         const bookmodel = new bookModel({
+           title: input.title,
+           description: input.description,
+           emailId: context.email,
+           genre: input.genre
+         });
+         await bookmodel.save();
+         return ({
+           genre: bookmodel.genre,
+           title: input.title,
+           description: input.description,
+         })
+       }
+       catch (error) {
+         console.log(error);
+         return new ApolloError.ApolloError('Internal Server Error');
+       }
+     },
+ 
+     /**
+       * @description Mutation to edit a existing book
+       * @param {*} empty
+       * @param {*} input 
+       * @param {*} context
+       */
+     editBook: async (_, { input }, context) => {
+       try {
+         if (!context.id) {
+           return new ApolloError.AuthenticationError('UnAuthenticated');
+         }
+         if (context.role === "Customer") {
+           return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
+         }
+         const checkbooks = await bookModel.find({ emailId: context.email });
+         if (checkbooks.length === 0) {
+           return new ApolloError.UserInputError('User has not created any books till now');
+         }
+         let index = 0;
+         while (index < checkbooks.length) {
+           if (checkbooks[index].id === input.bookId) {
+             await bookModel.findByIdAndUpdate(checkbooks[index], {
+               title: input.title || checkbooks[index].title,
+               description: input.description || checkbooks[index].description,
+               genre: input.genre || checkbooks[index].genre
+             }, { new: true });
+             return ({
+               genre: input.genre || checkbooks[index].genre,
+               title: input.title || checkbooks[index].title,
+               description: input.description || checkbooks[index].description
+             })
+           }
+           index++;
+         }
+         return new ApolloError.UserInputError('Book with the given id was not found');
+       }
+       catch (error) {
+         console.log(error);
+         return new ApolloError.ApolloError('Internal Server Error');
+       }
+     },
+ 
+     /**
+       * @description Mutation to delete a book
+       * @param {*} empty
+       * @param {*} bookId
+       * @param {*} context
+       */
+     deleteBook: async (_, { bookId }, context) => {
+       try {
+         if (!context.id) {
+           return new ApolloError.AuthenticationError('UnAuthenticated');
+         }
+         if (context.role === "Customer") {
+           return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
+         }
+         const checkbooks = await bookModel.find({ emailId: context.email });
+         if (checkbooks.length === 0) {
+           return new ApolloError.UserInputError('User has not created any books till now');
+         }
+         let index = 0;
+         while (index < checkbooks.length) {
+           if (checkbooks[index].id === bookId) {
+             await bookModel.findByIdAndDelete(checkbooks[index]);
+             return `Book with id ${bookId} was deleted sucessfully`
+           }
+           index++;
+         }
+         return new ApolloError.UserInputError('Book with the given id was not found');
+       }
+       catch (error) {
+         console.log(error);
+         return new ApolloError.ApolloError('Internal Server Error');
+       }
+     },
+ 
+     /**
+      * @description Mutation to search a book
       * @param {*} empty
-      * @param {*} input 
+      * @param {*} input
       * @param {*} context
       */
-    createBook: async (_, { input }, context) => {
-      try {
-        if (!context.id) {
-          return new ApolloError.AuthenticationError('UnAuthenticated');
-        }
-        if (context.role === "Customer") {
-          return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
-        }
-        const bookmodel = new bookModel({
-          title: input.title,
-          description: input.description,
-          emailId: context.email,
-          genre: input.genre
-        });
-        await bookmodel.save();
-        return ({
-          genre: bookmodel.genre,
-          title: input.title,
-          description: input.description,
-        })
-      }
-      catch (error) {
-        console.log(error);
-        return new ApolloError.ApolloError('Internal Server Error');
-      }
-    },
-
-    /**
-      * @description Mutation to edit a existing book
-      * @param {*} empty
-      * @param {*} input 
-      * @param {*} context
-      */
-    editBook: async (_, { input }, context) => {
-      try {
-        if (!context.id) {
-          return new ApolloError.AuthenticationError('UnAuthenticated');
-        }
-        if (context.role === "Customer") {
-          return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
-        }
-        const checkbooks = await bookModel.find({ emailId: context.email });
-        if (checkbooks.length === 0) {
-          return new ApolloError.UserInputError('User has not created any books till now');
-        }
-        let index = 0;
-        while (index < checkbooks.length) {
-          if (checkbooks[index].id === input.bookId) {
-            await bookModel.findByIdAndUpdate(checkbooks[index], {
-              title: input.title || checkbooks[index].title,
-              description: input.description || checkbooks[index].description,
-              genre: input.genre || checkbooks[index].genre
-            }, { new: true });
-            return ({
-              genre: input.genre || checkbooks[index].genre,
-              title: input.title || checkbooks[index].title,
-              description: input.description || checkbooks[index].description
-            })
-          }
-          index++;
-        }
-        return new ApolloError.UserInputError('Book with the given id was not found');
-      }
-      catch (error) {
-        console.log(error);
-        return new ApolloError.ApolloError('Internal Server Error');
-      }
-    },
-
-    /**
-      * @description Mutation to delete a book
-      * @param {*} empty
-      * @param {*} bookId
-      * @param {*} context
-      */
-    deleteBook: async (_, { bookId }, context) => {
-      try {
-        if (!context.id) {
-          return new ApolloError.AuthenticationError('UnAuthenticated');
-        }
-        if (context.role === "Customer") {
-          return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
-        }
-        const checkbooks = await bookModel.find({ emailId: context.email });
-        if (checkbooks.length === 0) {
-          return new ApolloError.UserInputError('User has not created any books till now');
-        }
-        let index = 0;
-        while (index < checkbooks.length) {
-          if (checkbooks[index].id === bookId) {
-            await bookModel.findByIdAndDelete(checkbooks[index]);
-            return `Book with id ${bookId} was deleted sucessfully`
-          }
-          index++;
-        }
-        return new ApolloError.UserInputError('Book with the given id was not found');
-      }
-      catch (error) {
-        console.log(error);
-        return new ApolloError.ApolloError('Internal Server Error');
-      }
-    },
-
-    /**
-     * @description Mutation to search a book
-     * @param {*} empty
-     * @param {*} input
-     * @param {*} context
-     */
-    searchBooks: async (_, { input }, context) => {
-      {
-        try {
-          if (!context.id) {
-            return new ApolloError.AuthenticationError('UnAuthenticated');
-          }
-
-          const getBookTitle = await bookModel.find({ title: { $regex: input.title || 'no', $options: 'i' } });
-          if (input.bookId != null) {
-            const getBookId = await bookModel.find({ _id: input.bookId })
-            if (getBookId) {
-              return getBookId
-            }
-            else {
-              return new ApolloError.UserInputError("Book Not Found");
-            }
-          };
-          if (getBookTitle.length != 0) {
-            return getBookTitle;
-          }
-          if (input.genre != null && input.genre != 'Adventure' && input.genre != 'Romantic' && input.genre != 'Novel' && input.genre != 'Fiction' && input.genre != 'Detective' && input.genre != 'Fantasy' && input.genre != 'Horror') {
-            return new ApolloError.UserInputError("BookType Should be of : 'Adventure' , 'Romantic' , 'Novel' , 'Fiction' , 'Detective' , 'Fantasy' , 'Horror' only");
-          }
-          const getBookGenre = await bookModel.find({ genre: input.genre });
-          if (getBookGenre.length != 0) {
-            return getBookGenre;
-          }
-          return new ApolloError.UserInputError("Book Not Found");
-        }
-        catch (error) {
-          console.log(error);
-          return new ApolloError.ApolloError('Internal Server Error');
-        }
-      }
-    }
-  }
-}
-module.exports = bookResolvers;
+     searchBooks: async (_, { input }, context) => {
+       {
+         try {
+           if (!context.id) {
+             return new ApolloError.AuthenticationError('UnAuthenticated');
+           } 
+           const getBookTitle = await bookModel.find({ title: { $regex: input.title || 'no', $options: 'i' } });
+           if (input.bookId != null) {
+             const getBookId = await bookModel.find({ _id: input.bookId })
+             if (getBookId) {
+               return getBookId
+             }
+             else {
+               return new ApolloError.UserInputError("Book Not Found");
+             }
+           };
+           if (getBookTitle.length != 0) {
+             return getBookTitle;
+           }
+           if (input.genre != null && input.genre != 'Adventure' && input.genre != 'Romantic' && input.genre != 'Novel' && input.genre != 'Fiction' && input.genre != 'Detective' && input.genre != 'Fantasy' && input.genre != 'Horror') {
+             return new ApolloError.UserInputError("BookType Should be of : 'Adventure' , 'Romantic' , 'Novel' , 'Fiction' , 'Detective' , 'Fantasy' , 'Horror' only");
+           }
+           const getBookGenre = await bookModel.find({ genre: input.genre });
+           if (getBookGenre.length != 0) {
+             return getBookGenre;
+           }
+           return new ApolloError.UserInputError("Book Not Found");
+         }
+         catch (error) {
+           console.log(error);
+           return new ApolloError.ApolloError('Internal Server Error');
+         }
+       }
+     }
+   }
+ }
+ module.exports = bookResolvers;
