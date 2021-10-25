@@ -14,7 +14,7 @@ const addToCartSchema = mongoose.Schema({
     bookIds: {
         type: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'bookModel'
+            ref: 'books'
         }]
     },
 },

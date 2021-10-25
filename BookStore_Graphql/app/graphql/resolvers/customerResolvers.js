@@ -58,7 +58,7 @@ const bookResolvers = {
         },
 
         /**
-          * @description Mutation to edit a existing book
+          * @description Mutation to remove a book from cart
           * @param {*} empty
           * @param {*} input 
           * @param {*} context
@@ -90,42 +90,39 @@ const bookResolvers = {
                     }
                     return `Item with id: ${bookId} not found`
                 }
-                    return `Item with id: ${bookId} not found`
-                
+                return `Item with id: ${bookId} not found`
+
             }
             catch (error) {
                 console.log(error);
                 return new ApolloError.ApolloError('Internal Server Error');
             }
         },
-
         /**
           * @description Mutation to delete a book
           * @param {*} empty
           * @param {*} bookId
           * @param {*} context
           */
-        deleteBook: async (_, { bookId }, context) => {
+        showCartItems: async (_, __, context) => {
             try {
                 if (!context.id) {
                     return new ApolloError.AuthenticationError('UnAuthenticated');
                 }
-                if (context.role === "Customer") {
-                    return new ApolloError.AuthenticationError('Only Admin role can perform this operation');
+                if (context.role === "Admin") {
+                    return new ApolloError.AuthenticationError('Only Customer role can perform this operation');
                 }
-                const checkbooks = await bookModel.find({ emailId: context.email });
-                if (checkbooks.length === 0) {
-                    return new ApolloError.UserInputError('User has not created any books till now');
+                const checkaddToCart = await addToCartModel.findOne({ emailId: context.email });
+                if(checkaddToCart)
+                {
+                    const getBooks = await addToCartModel.
+                        findOne({ emailId: checkaddToCart.emailId }).
+                        populate('bookIds')
+                        console.log(getBooks)
+                        
+                   return getBooks.bookIds
                 }
-                let index = 0;
-                while (index < checkbooks.length) {
-                    if (checkbooks[index].id === bookId) {
-                        await bookModel.findByIdAndDelete(checkbooks[index]);
-                        return `Book with id ${bookId} was deleted sucessfully`
-                    }
-                    index++;
-                }
-                return new ApolloError.UserInputError('Book with the given id was not found');
+                return ApolloError.UserInputError("No books added in cart")
             }
             catch (error) {
                 console.log(error);

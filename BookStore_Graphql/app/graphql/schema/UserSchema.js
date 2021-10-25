@@ -73,4 +73,5 @@ module.exports = gql(`
         deleteBook(bookId:ID!):String
         addBookToCart(bookId:ID!):String
         removeFromCart(bookId:ID!):String
+        showCartItems:[BookOutput]!
         }`);
