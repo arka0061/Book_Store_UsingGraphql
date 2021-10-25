@@ -36,6 +36,7 @@ module.exports = gql(`
         email:String
     }
     type Book{
+        _id:ID
         title:String
         description:String
     }
@@ -70,4 +71,5 @@ module.exports = gql(`
         createBook(input:CreateBookInput):BookOutput
         editBook(input:EditBookInput):BookOutput
         deleteBook(bookId:ID!):String
+        addBookToCart(bookId:ID!):String
         }`);
