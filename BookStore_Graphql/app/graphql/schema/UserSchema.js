@@ -21,7 +21,6 @@ module.exports = gql(`
         lastName:String!
         email:String!
         password:String!
-        role:String!
     }
     input LoginInput{     
         email:String!
@@ -71,7 +70,7 @@ module.exports = gql(`
         users:[User!]!
     }
     type Mutation{
-        admin(email:String!):String
+        admin(emailId:String!):String
         createUser(input:UserInput):User
         loginUser(input:LoginInput):authUser
         createBook(input:CreateBookInput):BookOutput

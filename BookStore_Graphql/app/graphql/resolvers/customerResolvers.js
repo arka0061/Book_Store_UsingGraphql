@@ -91,7 +91,6 @@ const bookResolvers = {
                     return `Item with id: ${bookId} not found`
                 }
                 return `Item with id: ${bookId} not found`
-
             }
             catch (error) {
                 console.log(error);
@@ -125,7 +124,7 @@ const bookResolvers = {
                 console.log(error);
                 return new ApolloError.ApolloError('Internal Server Error');
             }
-        },
+        },     
     }
 }
 module.exports = bookResolvers;
