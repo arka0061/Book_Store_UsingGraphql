@@ -2,7 +2,7 @@
  * Execution    : 1. Default node with npm   cmd> node server.js
  *                2. If nodemon installed    cmd> npm start
  * 
- * Purpose      : Controls the operations of note creation and other CRUD
+ * Purpose      : Controls the operations of book creation and other CRUD
  * 
  * @package     : apollo-server-errors
  * @file        : app/graphql/resolvers/noteResolvers.js
@@ -181,7 +181,7 @@
            return new ApolloError.ApolloError('Internal Server Error');
          }
        }
-     }
+     },
    }
  }
  module.exports = bookResolvers;
