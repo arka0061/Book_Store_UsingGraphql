@@ -14,7 +14,6 @@
  const bcrypt = require('bcryptjs');
  const ApolloError = require('apollo-server-errors');
  const userModel = require('../../models/user.model');
- const adminModel=require('../../models/admin.model');
  const bcryptPassword = require('../../utilities/bcryptpassword');
  const joiValidation = require('../../utilities/joiValidation');
  const jwt = require('../../utilities/jwtToken');
@@ -52,10 +51,7 @@
          if (existingUser) {
            return new ApolloError.UserInputError('User Already Exists');
          }
-         const checkIfAdmin=await adminModel.findOne({email:input.email});
-         if (!checkIfAdmin) {
-          return new ApolloError.AuthenticationError('Permission unauthorised');
-        }
+         
          bcryptPassword.hashpassword(input.password, (error, data) => {
            if (data) {
              usermodel.password = data;
@@ -108,17 +104,24 @@
          return new ApolloError.ApolloError('Internal Server Error');
        }
      },
-     admin: async (_, { email }) => {
+     admin: async (_, { emailId },context) => {
       try {
-        const adminmodel = new adminModel({
-          emailId: email,
-        });
-        const existingUser = await adminModel.findOne({ emailId: email });
-        if (existingUser) {
-          return new ApolloError.UserInputError('User Already Exists');
+        if (!context.id) {
+          return new ApolloError.AuthenticationError('UnAuthenticated');
+      }
+        if(context.role!='Admin')
+        {
+          return new ApolloError.AuthenticationError('Only Admin is permiteed to perform this operation');
         }
-          adminmodel.save();
-        return "New Admin Added Sucessfully"
+        const checkUser=await userModel.findOne({email:emailId})
+        if(!checkUser)
+        {
+          return new ApolloError.UserInputError(`Emaild id ${emailId} is not registered`)
+        }
+        checkUser.role='Admin'
+        await checkUser.save();
+        return `User with emailId : ${emailId} role changed to admin sucessfully`
+        
       } catch (error) {
         console.log(error);
         return new ApolloError.ApolloError('Internal Server Error');

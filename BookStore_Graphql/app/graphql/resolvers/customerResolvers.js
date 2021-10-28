@@ -2,7 +2,7 @@
  * Execution    : 1. Default node with npm   cmd> node server.js
  *                2. If nodemon installed    cmd> npm start
  * 
- * Purpose      : Controls the operations of note creation and other CRUD
+ * Purpose      : Controls the operations  of customer role
  * 
  * @package     : apollo-server-errors
  * @file        : app/graphql/resolvers/noteResolvers.js
@@ -31,6 +31,11 @@ const bookResolvers = {
                 }
                 if (context.role === "Admin") {
                     return new ApolloError.AuthenticationError('Only Customer role can perform this operation');
+                }
+                const checkStateOfBook=await bookModel.findOne({_id:bookId})
+                if(checkStateOfBook.state=='Sold Out')
+                {
+                    return new ApolloError.UserInputError('The book is already sold out')
                 }
                 const checkaddToCart = await addToCartModel.findOne({ emailId: context.email });
                 if (checkaddToCart) {
@@ -91,7 +96,6 @@ const bookResolvers = {
                     return `Item with id: ${bookId} not found`
                 }
                 return `Item with id: ${bookId} not found`
-
             }
             catch (error) {
                 console.log(error);
@@ -125,7 +129,44 @@ const bookResolvers = {
                 console.log(error);
                 return new ApolloError.ApolloError('Internal Server Error');
             }
-        },
+        },    
+        buy: async (_, { bookId }, context) => {
+            try {
+                if (!context.id) {
+                    return new ApolloError.AuthenticationError('UnAuthenticated');
+                }
+                if (context.role === "Admin") {
+                    return new ApolloError.AuthenticationError('Only Customer role can perform this operation');
+                }
+                const checkaddToCart = await addToCartModel.findOne({ emailId: context.email });
+                if (checkaddToCart) {
+                    for (index = 0; index < checkaddToCart.bookIds.length; index++) {
+                        if (JSON.stringify(checkaddToCart.bookIds[index]) === JSON.stringify(bookId)) {
+                            let itemToBeRemoved = bookId;
+                            const bookState=await bookModel.findOne({_id:bookId});
+                            bookState.state="Sold Out"
+                            await bookState.save();
+                            await addToCartModel.findOneAndUpdate(
+                                {
+                                    emailId: context.email
+                                },
+                                {
+                                    $pull: {
+                                        bookIds: itemToBeRemoved
+                                    },
+                                })
+                            return `Item with id: ${bookId} Purchased sucessfully from cart`
+                        }
+                    }
+                    return `Item with id: ${bookId} not found`
+                }
+                return `Item with id: ${bookId} not found`
+            }
+            catch (error) {
+                console.log(error);
+                return new ApolloError.ApolloError('Internal Server Error');
+            }
+        }
     }
 }
 module.exports = bookResolvers;

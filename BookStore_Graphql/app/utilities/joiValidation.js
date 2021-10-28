@@ -32,14 +32,13 @@ class joiValidation {
             password: Joi.string()
                 .pattern(new RegExp('[A-Za-z0-9]{4,}[$&+,:;=?@#|<>.^*()%!-]{2,}'))
                 .required(),
-             _id: Joi.required(),
-            role:Joi.string().valid("Admin", "Customer").required()
-            
+            _id: Joi.required(),
+            role:Joi.required()
         })
 
-          /**
- * @description   : validating all parameters we are getting from the user for login
- * @method        : string, min, required, regex pattern
+    /**
+* @description   : validating all parameters we are getting from the user for login
+* @method        : string, min, required, regex pattern
 */
     authLogin =
         Joi.object({
@@ -51,5 +50,5 @@ class joiValidation {
                 .required()
                 .pattern(new RegExp('[A-Za-z0-9]{4,}[$&+,:;=?@#|<>.^*()%!-]{2,}'))
         });
- }
+}
 module.exports = new joiValidation();

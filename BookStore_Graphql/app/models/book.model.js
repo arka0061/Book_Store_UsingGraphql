@@ -19,8 +19,12 @@ const bookSchema = mongoose.Schema({
         required: true
     },
     genre:{
-        type:"String",
+        type:String,
         default:"miscellaneous"
+    },
+    state:{
+        type:String,
+        default:"Avaiable"
     }
 },
     {
